@@ -1,11 +1,14 @@
 #! /usr/bin/python
 from collections import defaultdict
 import secrets
+import json
+
+log = open("vote.log", "a")
 
 DNN = ["etape", "90"]
-RNN = ["etape", "80"]
-HMM = ["echap", "90"]
-GMM = ["echap", "80"]
+RNN = ["cc", "70"]
+HMM = ["echap", "30"]
+GMM = ["hey", "80"]
 
 #List all the duplicate element and their index
 def list_duplicates(seq):
@@ -98,6 +101,11 @@ def vote(*result_module):
         word.append(listNN[0])
         cert.append(listNN[1])
     
+    json.dump(word, log)
+    log.write("\n")
+    json.dump(cert, log)
+    log.write("\n")
+
     dupli_list = list_duplicates(word)
     nbr_dupli_word = ilen(dupli_list)
 
@@ -111,4 +119,5 @@ def vote(*result_module):
     return word
 
 result_vote = vote(DNN,RNN,HMM,GMM)
+log.write(result_vote + "\n\n")
 print(result_vote)
