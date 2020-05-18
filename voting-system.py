@@ -3,9 +3,9 @@ from collections import defaultdict
 import secrets
 
 DNN = ["etape", "90"]
-RNN = ["cc", "80"]
+RNN = ["etape", "80"]
 HMM = ["echap", "90"]
-GMM = ["patate", "80"]
+GMM = ["echap", "80"]
 
 #List all the duplicate element and their index
 def list_duplicates(seq):
@@ -29,7 +29,7 @@ def rand_idx(locs):
     return rand_res
 
     
-#Choose the good word from a list with his certitude. If there are the same cert, random between both
+#Choose the good word from a list with his certitude. If there are the same cert, random between both, work for more than 4 lists
 def noDupli(word,cert):
     dupli_cert = list_duplicates(cert)
     nbr_dupli_cert = ilen(dupli_cert)
@@ -47,7 +47,7 @@ def noDupli(word,cert):
             else: #if the max certitude is not dupli
                 return word[idx_max]
 
-    elif nbr_dupli_cert is 2:
+    else:
         for key,locs in dupli_cert.items():
             if max_cert is key:
                 rand_loc = rand_idx(locs)
@@ -58,13 +58,37 @@ def oneDupli(dupli_list, word):
     for dupli in dupli_list:
         return(dupli)
 
-def eqDupli(cert,word):
+#Determine between 2 words which is better, /!\ only work for 4 lists from ML
+def eqDupli(cert,dupli_list,word):
     dupli_cert = list_duplicates(cert)
+    nbr_dupli_cert = ilen(dupli_cert)
+    max_cert = max(cert)
+    idx_max = cert.index(max_cert)
+    list_idx = []
+    mean_w1 = 0
+    mean_w2 = 0
 
-    for key,locs in dupli_cert.items():
-        raise NotImplementedError
-    #TODO : prendre la moyenne des deux dupli, si moyenne = prendre la certitude la plus haute
-    
+    #Get all location by key in a list
+    for key, locs in dupli_list.items():
+        list_idx.append(locs[0])
+
+    #mean of certitude of each words
+    mean_w1 = (int(cert[list_idx[0][0]]) + int(cert[list_idx[0][1]]))/2
+    mean_w2 = (int(cert[list_idx[1][0]]) + int(cert[list_idx[1][1]]))/2
+
+    if mean_w1 > mean_w2:
+        return word[list_idx[0][0]]
+    elif mean_w2 > mean_w1:
+        return word[list_idx[1][0]]
+    elif mean_w1 == mean_w2: #if means are equals
+        if nbr_dupli_cert is 0: #if there is no duplicated cert return the word with the max cert
+            return word[idx_max]
+        else: # else random between the 2 words
+            rand_word = secrets.randbelow(2)
+            if rand_word is 1:
+                return word[list_idx[0][0]]
+            else:
+                return word[list_idx[1][0]]
 
 def vote(*result_module):
     cert = []
@@ -78,14 +102,11 @@ def vote(*result_module):
     nbr_dupli_word = ilen(dupli_list)
 
     if nbr_dupli_word is 0:
-        print("tous diff")
         return noDupli(word,cert)
     elif nbr_dupli_word is 1:
-        print("un mot dupli")
         return oneDupli(dupli_list,word)
     elif nbr_dupli_word is 2:
-        print("NN has found 2 result possible")
-        return eqDupli(cert,word)
+        return eqDupli(cert,dupli_list,word)
 
     return word
 
